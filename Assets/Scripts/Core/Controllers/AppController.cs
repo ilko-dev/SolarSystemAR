@@ -124,5 +124,20 @@ namespace SolarSystemAR.Core
             state.TourIndex = tourController.CurrentIndex;
             SelectPlanet(planet, AppMode.GuidedTour);
         }
+
+
+        public void SetTrackingAvailable(bool available)
+        {
+            if (state.IsTrackingAvailable == available)
+                return;
+
+            state.IsTrackingAvailable = available;
+
+            NotifyStateChanged();
+
+            Debug.Log(available
+                ? "AR tracking available."
+                : "AR tracking lost.");
+        }
     }
 }
