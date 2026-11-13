@@ -14,7 +14,9 @@ namespace SolarSystemAR.Core
         AskQuestion,
         StopNarration,
         RepeatNarration,
-        Cancel
+        Cancel,
+        EnterDetailView,
+        ExitDetailView
     }
 
     public class AppCommand

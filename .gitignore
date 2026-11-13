@@ -107,3 +107,8 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Unity Android / IL2CPP generated build output
+**/il2cppOutput/
+**/BackUpThisFolder_ButDontShipItWithYourGame/
+**/BurstDebugInformation_DoNotShip/
