@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Unit tests for the voice command parser, run outside Unity:
+      dotnet test Tests/VoiceParser.Tests
+    The parser source files are linked from Assets/, not copied.
+    LangVersion 9 matches what Unity compiles, so code that passes here also compiles in Unity.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Assets/Scripts/Core/Models/AppCommand.cs" Link="Linked/AppCommand.cs" />
+    <Compile Include="../../Assets/Scripts/Core/Models/PlanetId.cs" Link="Linked/PlanetId.cs" />
+    <Compile Include="../../Assets/Scripts/Voice/VoiceCommandParser.cs" Link="Linked/VoiceCommandParser.cs" />
+    <Compile Include="../../Assets/Scripts/Voice/VoiceKeywords.cs" Link="Linked/VoiceKeywords.cs" />
+    <Compile Include="../../Assets/Scripts/Voice/VoiceParseContext.cs" Link="Linked/VoiceParseContext.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>
