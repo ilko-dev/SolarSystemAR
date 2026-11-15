@@ -128,6 +128,17 @@ namespace SolarSystemAR.Core
             SetState(GuideState.Listening);
         }
 
+        // Called by the voice system when listening ends (back to pointing/idle).
+        public void StopListening()
+        {
+            if (currentState != GuideState.Listening)
+                return;
+
+            SetState(targetPlanet != null
+                ? GuideState.Pointing
+                : GuideState.Idle);
+        }
+
         private void SetState(GuideState state)
         {
             currentState = state;

@@ -16,6 +16,10 @@ namespace SolarSystemAR.Core
         public AppState State => state;
         public string LastNarrationText => lastNarrationText;
 
+        // Read-only access for the voice system (prepared questions for speech matching).
+        public System.Collections.Generic.IReadOnlyList<PlanetData> PlanetCatalog =>
+            planetCatalog ?? new PlanetData[0];
+
         public event Action<AppState> StateChanged;
         public event Action<PlanetId> PlanetSelected;
 
