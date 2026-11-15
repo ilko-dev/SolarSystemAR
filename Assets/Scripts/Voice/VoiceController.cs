@@ -39,6 +39,7 @@ namespace SolarSystemAR.Voice
         {
             recognizer.Recognized += OnRecognized;
             recognizer.Failed += OnRecognitionFailed;
+            synthesizer.Problem += OnSynthesizerProblem;
 
             if (appController != null)
             {
@@ -51,6 +52,7 @@ namespace SolarSystemAR.Voice
         {
             recognizer.Recognized -= OnRecognized;
             recognizer.Failed -= OnRecognitionFailed;
+            synthesizer.Problem -= OnSynthesizerProblem;
 
             if (appController != null)
             {
@@ -62,15 +64,35 @@ namespace SolarSystemAR.Voice
             synthesizer.Stop();
         }
 
-        // Step 3 swaps these for the Android implementations on the phone.
+        private void OnDestroy()
+        {
+            recognizer?.Dispose();
+            synthesizer?.Dispose();
+        }
+
+        private void Update()
+        {
+            // Deliver Android callbacks on Unity's main thread.
+            MainThreadQueue.Drain();
+        }
+
+        // Real microphone and voice on the phone; typing + Console in the Editor / on PC.
         private static ISpeechRecognizer CreateRecognizer()
         {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            return new AndroidSpeechRecognizer();
+#else
             return new TypedTextRecognizer();
+#endif
         }
 
         private static ISpeechSynthesizer CreateSynthesizer()
         {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            return new AndroidSpeechSynthesizer();
+#else
             return new LogSpeechSynthesizer();
+#endif
         }
 
         // ---------- listening ----------
@@ -93,11 +115,24 @@ namespace SolarSystemAR.Voice
             recognizer.StartListening();
         }
 
-        private void OnRecognized(string text)
+        private void OnRecognized(IReadOnlyList<string> alternatives)
         {
             guideController?.StopListening();
 
-            AppCommand command = VoiceCommandParser.Parse(text, BuildContext());
+            // The phone returns several guesses ("Марс", "марш", ...): use the first one we understand.
+            VoiceParseContext context = BuildContext();
+            string text = alternatives.Count > 0 ? alternatives[0] : string.Empty;
+            AppCommand command = null;
+            foreach (string candidate in alternatives)
+            {
+                command = VoiceCommandParser.Parse(candidate, context);
+                if (command != null)
+                {
+                    text = candidate;
+                    break;
+                }
+            }
+
             if (command == null)
             {
                 status = $"Ви сказали: «{text}» — не зрозумів, повторіть";
@@ -127,6 +162,11 @@ namespace SolarSystemAR.Voice
             guideController?.StopListening();
             status = message;
             Debug.Log($"[Voice] Recognition failed: {message}");
+        }
+
+        private void OnSynthesizerProblem(string message)
+        {
+            status = message;
         }
 
         private VoiceParseContext BuildContext()

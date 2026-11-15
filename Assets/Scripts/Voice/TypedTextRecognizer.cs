@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SolarSystemAR.Voice
 {
@@ -8,7 +9,7 @@ namespace SolarSystemAR.Voice
     /// </summary>
     public class TypedTextRecognizer : ISpeechRecognizer
     {
-        public event Action<string> Recognized;
+        public event Action<IReadOnlyList<string>> Recognized;
         public event Action<string> Failed;
 
         public bool IsListening { get; private set; }
@@ -19,6 +20,11 @@ namespace SolarSystemAR.Voice
         }
 
         public void Cancel()
+        {
+            IsListening = false;
+        }
+
+        public void Dispose()
         {
             IsListening = false;
         }
@@ -34,7 +40,7 @@ namespace SolarSystemAR.Voice
             if (string.IsNullOrWhiteSpace(text))
                 Failed?.Invoke("Нічого не введено.");
             else
-                Recognized?.Invoke(text.Trim());
+                Recognized?.Invoke(new[] { text.Trim() });
         }
     }
 }
