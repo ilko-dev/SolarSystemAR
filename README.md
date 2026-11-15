@@ -15,9 +15,11 @@ You don't have to say a phrase exactly. The app looks for **key words** anywhere
 
 | What you want | Say, for example | What happens |
 |---|---|---|
-| **Show a planet** | «Юпітер», «покажи Марс», «перейди до Венери» | Selects the planet. The guide flies to it and points at it. Any running tour stops. |
+| **What can I say?** | «що ти вмієш», «допомога», «які команди» | The guide lists what it can do. |
+| **Show a planet** | «Юпітер», «покажи Марс», «перейди до Венери» | Selects the planet. The guide flies to it, points at it and gives a short intro (type, size, distance, day/year, moons). Any running tour stops. |
 | **Interesting fact** | «цікавий факт», «розкажи про Марс», «розкажи» | The guide reads the planet's interesting fact. Uses the planet you named, otherwise the selected one. |
 | **Discovery history** | «історія», «хто відкрив», «розкажи історію Юпітера» | The guide reads how the planet was discovered. Uses the named or selected planet. |
+| **Which questions can I ask?** | «які питання», «що можна запитати про Сатурн» | The guide reads the named or selected planet's prepared questions. |
 | **Ask a prepared question** | «чому Марс червоний?», «скільки супутників у Юпітера?» | If the phrase matches one of the planet's prepared questions, the guide reads its answer (see [Prepared questions](#prepared-questions)). |
 | **Start the tour** | «почни екскурсію», «тур», «подорож» | Starts the guided tour: the guide goes through the planets one by one and talks about each. |
 | **Next planet** | «далі», «наступна планета», «вперед» | Moves the tour to the next planet. |
@@ -51,6 +53,8 @@ Each planet's data asset (`Assets/Data/Planets/*Data.asset`) has a **Questions**
 - Most of the question's meaningful words must be heard. «чому Марс червоний» matches "Чому Марс червоний?", but «червоний Марс» alone just shows Mars.
 - If you name a planet, only that planet's questions are checked. If you don't, all planets are checked, and the selected planet wins a tie («скільки супутників» while Jupiter is selected → Jupiter's question).
 
+Every planet has three questions: «Скільки супутників у …?», «Чи можна жити на …?» and one of its own (for example «Чому Марс червоний?», «Що таке Велика червона пляма?», «З чого складаються кільця Сатурна?»). Because the first two exist for every planet, «скільки супутників» or «чи можна там жити» works for whichever planet is selected.
+
 To add a question, fill in a new entry in the planet's asset in the Inspector. Voice picks it up automatically, so no code changes are needed.
 
 ## For developers
@@ -71,7 +75,7 @@ The parser has unit tests that run without Unity (.NET 8 SDK needed):
 dotnet test Tests/VoiceParser.Tests
 ```
 
-After changing `VoiceKeywords.cs`, run the tests and add a test for the new phrase in `Tests/VoiceParser.Tests/VoiceCommandParserTests.cs`.
+The tests also read the real questions from `Assets/Data/Planets/*.asset` and check that each one, read aloud, finds itself. After changing `VoiceKeywords.cs` or a planet's questions, run the tests and add a test for the new phrase in `Tests/VoiceParser.Tests/VoiceCommandParserTests.cs`.
 
 ### Phone setup for the Ukrainian voice
 

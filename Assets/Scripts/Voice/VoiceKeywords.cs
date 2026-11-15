@@ -43,6 +43,10 @@ namespace SolarSystemAR.Voice
         // "розкажи історію" must hit History, not Fact.
         public static readonly KeyValuePair<CommandType, string[]>[] Intents =
         {
+            Intent(CommandType.ShowHelp, "допомо*", "довідк*", "що ти вмієш", "що вмієш", "що ти можеш",
+                "що можна сказати", "які команди", "команди"),
+            Intent(CommandType.ListQuestions, "які питання", "які запитання", "що можна запитати",
+                "що можна спитати", "що запитати", "що спитати", "список питань", "список запитань"),
             Intent(CommandType.StartTour, "екскурс*", "тур", "подорож*"),
             Intent(CommandType.NextPlanet, "наступн*", "далі", "вперед"),
             Intent(CommandType.ShowOverview, "огляд*", "вся систем*", "всю систем*", "уся систем*", "усю систем*",
@@ -60,7 +64,7 @@ namespace SolarSystemAR.Voice
         // Commands that use the planet named in the phrase (if any).
         public static readonly HashSet<CommandType> PlanetAwareCommands = new HashSet<CommandType>
         {
-            CommandType.ShowFact, CommandType.ShowHistory, CommandType.EnterDetailView,
+            CommandType.ShowFact, CommandType.ShowHistory, CommandType.EnterDetailView, CommandType.ListQuestions,
         };
 
         // Words ignored when comparing what was said with a prepared question.
@@ -70,6 +74,7 @@ namespace SolarSystemAR.Voice
             "мені", "нам", "будь", "ласка", "розкажи", "розкажіть", "скажи", "скажіть", "покажи", "покажіть",
             "поясни", "поясніть", "цей", "ця", "це", "ці", "той", "та", "тут", "там", "його", "її", "їх",
             "планета", "планети", "планеті", "планету", "планетою",
+            "такий", "така", "таке", "такі", "взагалі",
         };
 
         private static KeyValuePair<CommandType, string[]> Intent(CommandType type, params string[] phrases)

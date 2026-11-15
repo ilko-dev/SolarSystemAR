@@ -51,6 +51,9 @@ namespace SolarSystemAR.Core
                     {
                         tourController?.StopTour();
                         SelectPlanet(command.Planet.Value);
+
+                        if (state.SelectedPlanet == command.Planet)
+                            SpeakPlanetIntro(command.Planet.Value);
                     }
                     break;
 
@@ -126,6 +129,14 @@ namespace SolarSystemAR.Core
                     {
                         ShowOverview();
                     }
+                    break;
+
+                case CommandType.ShowHelp:
+                    Speak(HelpText);
+                    break;
+
+                case CommandType.ListQuestions:
+                    ListQuestions(command.Planet);
                     break;
 
                 default:
@@ -208,7 +219,7 @@ namespace SolarSystemAR.Core
             PlanetData data = GetPlanetData(id.Value);
 
             if (data == null)
-                Speak($"Немає довідкових даних для {id.Value}.");
+                Speak($"Про планету {PlanetNames.Ukrainian(id.Value)} ще немає даних.");
 
             return data;
         }
@@ -249,6 +260,47 @@ namespace SolarSystemAR.Core
             }
 
             Speak("Оберіть доступне запитання з меню.");
+        }
+
+        private const string HelpText =
+            "Я вмію показувати планети: скажіть, наприклад, «покажи Юпітер». " +
+            "Можу розповісти цікавий факт або історію відкриття, відповісти на запитання про планету — " +
+            "скажіть «які питання», щоб дізнатися, що можна запитати. " +
+            "Скажіть «почни екскурсію» для подорожі планетами, «далі» або «назад» — щоб перемикати їх, " +
+            "«пауза» — щоб зупинити рух планет, «огляд» — щоб побачити всю систему, " +
+            "і «стоп» — щоб я замовк.";
+
+        // Short spoken card when a planet is chosen by the user (button or voice).
+        private void SpeakPlanetIntro(PlanetId id)
+        {
+            PlanetData data = GetPlanetData(id);
+            if (data == null)
+                return;
+
+            Speak(PlanetIntro.Build(data.displayName, data.planetType, data.diameterKm,
+                data.distanceFromSunMillionKm, data.dayDuration, data.yearDuration, data.moonCount));
+        }
+
+        private void ListQuestions(PlanetId? planet)
+        {
+            PlanetData data = ResolvePlanetData(planet);
+
+            if (data == null)
+                return;
+
+            var questions = new System.Collections.Generic.List<string>();
+            if (data.questions != null)
+            {
+                foreach (var question in data.questions)
+                {
+                    if (question != null && !string.IsNullOrWhiteSpace(question.question))
+                        questions.Add(question.question.Trim());
+                }
+            }
+
+            Speak(questions.Count == 0
+                ? "Для цієї планети запитань ще немає."
+                : "Можете запитати: " + string.Join(" ", questions));
         }
 
         private void Speak(string text)
