@@ -80,6 +80,33 @@ namespace VoiceParser.Tests
             AssertCommand(Parse(text), type);
         }
 
+        // Every example phrase from README.md must keep working.
+        [Theory]
+        [InlineData("Юпітер", CommandType.SelectPlanet, PlanetId.Jupiter)]
+        [InlineData("розкажи", CommandType.ShowFact, null)]
+        [InlineData("подорож", CommandType.StartTour, null)]
+        [InlineData("вперед", CommandType.NextPlanet, null)]
+        [InlineData("зупини", CommandType.PauseOrbits, null)]
+        [InlineData("заморозь", CommandType.PauseOrbits, null)]
+        [InlineData("віднови", CommandType.ResumeOrbits, null)]
+        [InlineData("поїхали", CommandType.ResumeOrbits, null)]
+        [InlineData("всі планети", CommandType.ShowOverview, null)]
+        [InlineData("сонячна система", CommandType.ShowOverview, null)]
+        [InlineData("наблизь", CommandType.EnterDetailView, null)]
+        [InlineData("збільш", CommandType.EnterDetailView, null)]
+        [InlineData("детальніше про Сатурн", CommandType.EnterDetailView, PlanetId.Saturn)]
+        [InlineData("вихід", CommandType.ExitDetailView, null)]
+        [InlineData("повернись", CommandType.ExitDetailView, null)]
+        [InlineData("досить", CommandType.StopNarration, null)]
+        [InlineData("припини", CommandType.StopNarration, null)]
+        [InlineData("відміна", CommandType.Cancel, null)]
+        [InlineData("покажи, будь ласка, Юпітер", CommandType.SelectPlanet, PlanetId.Jupiter)]
+        [InlineData("покажи Марс", CommandType.SelectPlanet, PlanetId.Mars)]
+        public void ReadmeExamples_Work(string text, CommandType type, PlanetId? planet)
+        {
+            AssertCommand(Parse(text), type, planet);
+        }
+
         [Fact]
         public void TellAboutPlanet_IsFactForThatPlanet()
         {
