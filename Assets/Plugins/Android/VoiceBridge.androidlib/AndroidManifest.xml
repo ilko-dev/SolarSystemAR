@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Merged into the app's manifest by Unity at build time.
+  - RECORD_AUDIO: microphone for voice commands (asked at runtime the first time you press "Говорити").
+  - <queries>: on Android 11+ apps must declare which system services they look up,
+    otherwise the speech recognizer and text-to-speech engine are invisible to the app.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.solarsystemar.voicebridge">
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <application />
+</manifest>

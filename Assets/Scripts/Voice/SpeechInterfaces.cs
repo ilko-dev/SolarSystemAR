@@ -1,16 +1,17 @@
 using System;
+using System.Collections.Generic;
 
 namespace SolarSystemAR.Voice
 {
     /// <summary>
     /// Speech-to-text. Implementations: TypedTextRecognizer (PC/Editor, you type instead of speaking)
-    /// and, on Android, the phone's built-in Google recognizer.
+    /// and AndroidSpeechRecognizer (the phone's built-in Google recognizer).
     /// All events are raised on Unity's main thread.
     /// </summary>
-    public interface ISpeechRecognizer
+    public interface ISpeechRecognizer : IDisposable
     {
-        /// <summary>Final recognized phrase.</summary>
-        event Action<string> Recognized;
+        /// <summary>Recognized phrase, best guess first (Android returns several alternatives).</summary>
+        event Action<IReadOnlyList<string>> Recognized;
 
         /// <summary>Recognition ended without a phrase. The argument is a short Ukrainian message for the user.</summary>
         event Action<string> Failed;
@@ -24,10 +25,13 @@ namespace SolarSystemAR.Voice
 
     /// <summary>
     /// Text-to-speech. Implementations: LogSpeechSynthesizer (PC/Editor, writes to the Console)
-    /// and, on Android, the phone's built-in Google TTS voice.
+    /// and AndroidSpeechSynthesizer (the phone's built-in TTS voice).
     /// </summary>
-    public interface ISpeechSynthesizer
+    public interface ISpeechSynthesizer : IDisposable
     {
+        /// <summary>Setup problem worth showing to the user (e.g. no Ukrainian voice installed).</summary>
+        event Action<string> Problem;
+
         void Speak(string text);
 
         void Stop();
