@@ -2291,14 +2291,14 @@ MonoBehaviour:
   solarSystem: {fileID: 2066705298}
   tourController: {fileID: 2123552116}
   planetCatalog:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 39cbf436ed8c4c5d9a775437e98cda72, type: 2}
+  - {fileID: 11400000, guid: 93350fd0b47a49288f345afc8ede9de9, type: 2}
+  - {fileID: 11400000, guid: ee312ed9151d4829ad3bc5c19962f0fa, type: 2}
   - {fileID: 11400000, guid: d444d217d0f1d534fbf3c025d5b6ab16, type: 2}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: a5d43c02e27d4f489edd5c8da2aa72a0, type: 2}
+  - {fileID: 11400000, guid: 741901011f414a17abf9c6d2f5bf35bf, type: 2}
+  - {fileID: 11400000, guid: acf6333c634e449f8cac21c57504689b, type: 2}
+  - {fileID: 11400000, guid: e37531c1272542a1ba6c939ba79cf7ae, type: 2}
 --- !u!4 &2123552111
 Transform:
   m_ObjectHideFlags: 0
