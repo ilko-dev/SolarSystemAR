@@ -97,6 +97,8 @@ namespace SolarSystemAR.UI
                 SendButton("Stop", CommandType.StopNarration, buttonStyle);
                 SendButton("Repeat", CommandType.RepeatNarration, buttonStyle);
                 SendButton("Cancel", CommandType.Cancel, buttonStyle);
+                SendButton("Help", CommandType.ShowHelp, buttonStyle);
+                SendButton("List Questions", CommandType.ListQuestions, buttonStyle);
 
                 PlanetData data = appController.GetSelectedPlanetData();
 
