@@ -112,3 +112,8 @@ InitTestScene*.unity*
 **/il2cppOutput/
 **/BackUpThisFolder_ButDontShipItWithYourGame/
 **/BurstDebugInformation_DoNotShip/
+
+# Voice parser unit tests (plain .NET project outside Assets/, run with `dotnet test Tests/VoiceParser.Tests`)
+!/Tests/**/*.csproj
+/Tests/**/bin/
+/Tests/**/obj/
