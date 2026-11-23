@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,8 +10,8 @@ namespace SolarSystemAR.Voice
     /// </summary>
     public static class SpeechSentences
     {
-        /// <summary>Longer sentences are cut at a comma, dash or space so a caption fits in two or three lines.</summary>
-        public const int MaxLength = 120;
+        /// <summary>Longer sentences are cut at a comma, dash or space so a caption stays a few lines high.</summary>
+        public const int MaxLength = 90;
 
         private const string SentenceEnds = ".!?…";
         private const string ClosingMarks = "»\"”)";
@@ -82,21 +83,22 @@ namespace SolarSystemAR.Voice
         }
 
         // Index to cut a too-long sentence at: after the last ", " / "; " / ": ", before the last " — ",
-        // or at the last space, all within MaxLength. Never leaves a tiny first piece.
+        // or at the last space, all within MaxLength. Neither side is left tiny ("... Нептуна.").
         private static int FindCut(string piece)
         {
             int minimum = MaxLength / 3;
+            int limit = Math.Min(MaxLength, piece.Length - minimum);
 
-            for (int i = MaxLength - 1; i >= minimum; i--)
+            for (int i = limit - 1; i >= minimum; i--)
             {
-                if (piece[i] == ' ' && i > 0 && ",;:".IndexOf(piece[i - 1]) >= 0)
+                if (piece[i] == ' ' && ",;:".IndexOf(piece[i - 1]) >= 0)
                     return i;
-                if (piece[i] == ' ' && i + 1 < piece.Length && (piece[i + 1] == '—' || piece[i + 1] == '–'))
+                if (piece[i] == ' ' && (piece[i + 1] == '—' || piece[i + 1] == '–'))
                     return i;
             }
 
-            int space = piece.LastIndexOf(' ', MaxLength - 1);
-            return space >= minimum ? space : MaxLength;
+            int space = piece.LastIndexOf(' ', limit - 1);
+            return space >= minimum ? space : limit;
         }
     }
 }

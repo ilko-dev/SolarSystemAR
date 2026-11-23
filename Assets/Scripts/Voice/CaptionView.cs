@@ -14,15 +14,16 @@ namespace SolarSystemAR.Voice
     public class CaptionView : MonoBehaviour
     {
         // Sizes in the same units as the mic button's on-screen GUI (VoiceController.OnGUI),
-        // so the caption keeps clear of the button and the status line on every screen.
-        private const float BottomGap = 222f;   // above the "Ви сказали..." status label
-        private const float SideMargin = 12f;
+        // so the caption sits at the very bottom, left of the mic button, on every screen.
+        private const float BottomMargin = 10f;  // same as the mic button's bottom edge
+        private const float SideMargin = 10f;
+        private const float MicButtonSpace = 180f; // mic button (160) + gaps, kept free on the right
         private const float MaxWidth = 760f;
-        private const float FontSize = 21f;
-        private const float Padding = 14f;
+        private const float FontSize = 18f;
+        private const float Padding = 10f;
         private const float FadeSeconds = 0.2f;
 
-        private static readonly Color Background = new Color(0.025f, 0.045f, 0.075f, 0.85f);
+        private static readonly Color Background = new Color(0.025f, 0.045f, 0.075f, 0.7f);
 
         private VoiceController voice;
         private RectTransform bar;
@@ -86,14 +87,19 @@ namespace SolarSystemAR.Voice
             float scale = Mathf.Clamp(Screen.height / 900f, 1f, 2.5f); // same as VoiceController.OnGUI
             Rect safe = Screen.safeArea;
 
-            float width = Mathf.Min(safe.width - 2f * SideMargin * scale, MaxWidth * scale);
+            // Free strip along the bottom: from the left edge (inside the notch-safe area) to the mic button.
+            float left = Mathf.Max(safe.xMin, 0f) + SideMargin * scale;
+            float right = Screen.width - MicButtonSpace * scale;
+            float width = Mathf.Min(right - left, MaxWidth * scale);
             label.fontSize = FontSize * scale;
             float padding = Padding * scale;
             label.margin = new Vector4(padding, padding, padding, padding);
             float textHeight = label.GetPreferredValues(label.text, width - 2f * padding, 0f).y;
 
             bar.sizeDelta = new Vector2(width, textHeight + 2f * padding);
-            bar.anchoredPosition = new Vector2(safe.center.x, Mathf.Max(safe.yMin, 0f) + BottomGap * scale);
+            // Centred on the screen when there is room (landscape), otherwise pressed to the left.
+            float centre = Mathf.Clamp(Screen.width / 2f, left + width / 2f, right - width / 2f);
+            bar.anchoredPosition = new Vector2(centre, Mathf.Max(safe.yMin, 0f) + BottomMargin * scale);
         }
 
         private void Build()
