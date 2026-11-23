@@ -14,10 +14,9 @@ namespace SolarSystemAR.Voice
     public class CaptionView : MonoBehaviour
     {
         // Sizes in the same units as the mic button's on-screen GUI (VoiceController.OnGUI),
-        // so the caption sits at the very bottom, left of the mic button, on every screen.
-        private const float BottomMargin = 10f;  // same as the mic button's bottom edge
+        // so the caption sits full width just above the bottom row (status text + mic button) on every screen.
+        private const float BottomGap = 105f;    // mic button row is 95 high, plus a small gap
         private const float SideMargin = 10f;
-        private const float MicButtonSpace = 180f; // mic button (160) + gaps, kept free on the right
         private const float MaxWidth = 760f;
         private const float FontSize = 18f;
         private const float Padding = 10f;
@@ -87,9 +86,9 @@ namespace SolarSystemAR.Voice
             float scale = Mathf.Clamp(Screen.height / 900f, 1f, 2.5f); // same as VoiceController.OnGUI
             Rect safe = Screen.safeArea;
 
-            // Free strip along the bottom: from the left edge (inside the notch-safe area) to the mic button.
+            // Full width inside the notch-safe area, capped on wide (landscape) screens.
             float left = Mathf.Max(safe.xMin, 0f) + SideMargin * scale;
-            float right = Screen.width - MicButtonSpace * scale;
+            float right = Mathf.Min(safe.xMax, Screen.width) - SideMargin * scale;
             float width = Mathf.Min(right - left, MaxWidth * scale);
             label.fontSize = FontSize * scale;
             float padding = Padding * scale;
@@ -97,9 +96,8 @@ namespace SolarSystemAR.Voice
             float textHeight = label.GetPreferredValues(label.text, width - 2f * padding, 0f).y;
 
             bar.sizeDelta = new Vector2(width, textHeight + 2f * padding);
-            // Centred on the screen when there is room (landscape), otherwise pressed to the left.
             float centre = Mathf.Clamp(Screen.width / 2f, left + width / 2f, right - width / 2f);
-            bar.anchoredPosition = new Vector2(centre, Mathf.Max(safe.yMin, 0f) + BottomMargin * scale);
+            bar.anchoredPosition = new Vector2(centre, BottomGap * scale);
         }
 
         private void Build()
