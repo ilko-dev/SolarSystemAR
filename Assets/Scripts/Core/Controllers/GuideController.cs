@@ -25,8 +25,18 @@ namespace SolarSystemAR.Core
         [SerializeField] private Vector3 planetOffset =
             new Vector3(0.7f, 0f, 0.7f);
 
+        [Header("Floating (when still)")]
+        [Tooltip("How far up and down he floats, in the same units as Planet Offset.")]
+        [SerializeField] private float floatHeight = 0.04f;
+        [SerializeField] private float floatPeriod = 3f;
+        [Tooltip("Seconds to fade the floating in after arriving (and out when taking off).")]
+        [SerializeField] private float floatFade = 0.5f;
+
         private Transform targetPlanet;
         private Vector3 homePosition;
+
+        private float floatWeight;      // 0 = no floating (flying), 1 = full floating (still)
+        private Vector3 floatOffset;    // added to the position last frame
 
         private GuideState? currentState;
         private float talkingUntil;
@@ -81,6 +91,9 @@ namespace SolarSystemAR.Core
                   transform.parent.TransformVector(planetOffset)
                 : transform.parent.TransformPoint(homePosition);
 
+            // Take last frame's float offset off, so moving and arriving use the real position.
+            transform.position -= floatOffset;
+
             transform.position = Vector3.MoveTowards(
                 transform.position,
                 destination,
@@ -90,6 +103,8 @@ namespace SolarSystemAR.Core
             bool isMoving =
                 Vector3.Distance(transform.position, destination)
                 > arrivalDistance;
+
+            UpdateFloating(isMoving);
 
             if (isMoving)
             {
@@ -109,6 +124,21 @@ namespace SolarSystemAR.Core
                     ? GuideState.Pointing
                     : GuideState.Idle);
             }
+        }
+
+        // Gentle up-and-down bob while he hangs next to a planet (or at home).
+        // Moves the whole astronaut, on top of the Blender animation.
+        private void UpdateFloating(bool isMoving)
+        {
+            floatWeight = Mathf.MoveTowards(
+                floatWeight,
+                isMoving ? 0f : 1f,
+                Time.deltaTime / Mathf.Max(floatFade, 0.01f)
+            );
+
+            float wave = Mathf.Sin(Time.time * 2f * Mathf.PI / Mathf.Max(floatPeriod, 0.1f));
+            floatOffset = transform.parent.TransformVector(Vector3.up * (wave * floatHeight * floatWeight));
+            transform.position += floatOffset;
         }
 
         private void OnPlanetSelected(PlanetId id)
