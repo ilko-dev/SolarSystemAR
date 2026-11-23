@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -7,20 +8,25 @@ namespace SolarSystemAR.Voice
     /// <summary>
     /// Text-to-speech using the phone's built-in Android TextToSpeech engine, Ukrainian voice (uk-UA).
     /// Needs the Ukrainian voice in the phone's TTS settings (Google Speech Services usually has it).
+    ///
+    /// Every sentence is queued as its own "utterance" with an id like "7:2" (speech 7, sentence 2);
+    /// Android tells us when each one is finished, which moves the captions to the next sentence.
     /// </summary>
-    public class AndroidSpeechSynthesizer : ISpeechSynthesizer
+    public class AndroidSpeechSynthesizer : SentenceSpeechSynthesizer
     {
         private const int Success = 0;          // TextToSpeech.SUCCESS
         private const int QueueFlush = 0;       // TextToSpeech.QUEUE_FLUSH (replace what is being said)
+        private const int QueueAdd = 1;         // TextToSpeech.QUEUE_ADD (say after the previous one)
         private const int LangMissingData = -1; // TextToSpeech.LANG_MISSING_DATA
         private const int LangNotSupported = -2;
 
-        public event Action<string> Problem;
-
         private AndroidJavaObject tts;   // android.speech.tts.TextToSpeech
         private bool ready;
-        private string pendingText;      // asked to speak before the engine finished starting
-        private int utteranceCounter;
+        private bool broken;             // engine failed to start: captions run on estimated time
+
+        // Asked to speak before the engine finished starting.
+        private IReadOnlyList<string> pendingParts;
+        private int pendingSession;
 
         public AndroidSpeechSynthesizer()
         {
@@ -35,40 +41,33 @@ namespace SolarSystemAR.Voice
             catch (Exception e)
             {
                 Debug.LogException(e);
-                Problem?.Invoke("Не вдалося запустити озвучення.");
+                broken = true;
             }
         }
 
-        public void Speak(string text)
+        protected override bool StartVoice(IReadOnlyList<string> parts, int voiceSession)
         {
-            if (string.IsNullOrWhiteSpace(text) || tts == null)
-                return;
+            if (tts == null || broken)
+                return false;
 
             if (!ready)
             {
-                pendingText = text;
-                return;
+                pendingParts = parts;
+                pendingSession = voiceSession;
+                return true;
             }
 
-            try
-            {
-                using (var parameters = new AndroidJavaObject("android.os.Bundle"))
-                    tts.Call<int>("speak", text, QueueFlush, parameters, "narration" + (++utteranceCounter));
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-            }
+            return Enqueue(parts, voiceSession);
         }
 
-        public void Stop()
+        protected override void StopVoice()
         {
-            pendingText = null;
+            pendingParts = null;
             if (tts != null && ready)
                 tts.Call<int>("stop");
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (tts == null)
                 return;
@@ -79,6 +78,33 @@ namespace SolarSystemAR.Voice
             ready = false;
         }
 
+        private bool Enqueue(IReadOnlyList<string> parts, int voiceSession)
+        {
+            try
+            {
+                using (var parameters = new AndroidJavaObject("android.os.Bundle"))
+                {
+                    for (int i = 0; i < parts.Count; i++)
+                    {
+                        int result = tts.Call<int>("speak", parts[i], i == 0 ? QueueFlush : QueueAdd, parameters,
+                            voiceSession + ":" + i);
+                        if (result != Success)
+                        {
+                            tts.Call<int>("stop");
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                return false;
+            }
+        }
+
         // Runs on the Unity main thread (posted from the Android callback).
         private void OnInit(int status)
         {
@@ -87,6 +113,9 @@ namespace SolarSystemAR.Voice
 
             if (status != Success)
             {
+                broken = true;
+                OnVoiceUnavailable(pendingSession);
+                pendingParts = null;
                 Report("Озвучення недоступне на цьому телефоні.");
                 return;
             }
@@ -98,20 +127,33 @@ namespace SolarSystemAR.Voice
                     Report("Немає українського голосу. Встановіть його: Налаштування → Синтез мовлення → Google → Українська.");
             }
 
+            tts.Call<int>("setOnUtteranceCompletedListener", new CompletedListener(this));
             ready = true;
 
-            if (pendingText != null)
+            if (pendingParts != null)
             {
-                string text = pendingText;
-                pendingText = null;
-                Speak(text);
+                IReadOnlyList<string> parts = pendingParts;
+                pendingParts = null;
+                if (!Enqueue(parts, pendingSession))
+                    OnVoiceUnavailable(pendingSession);
+            }
+        }
+
+        // Runs on the Unity main thread. Called for finished, failed and stopped sentences alike.
+        private void OnUtteranceCompleted(string utteranceId)
+        {
+            string[] parts = utteranceId?.Split(':');
+            if (parts != null && parts.Length == 2
+                && int.TryParse(parts[0], out int voiceSession) && int.TryParse(parts[1], out int sentence))
+            {
+                OnVoiceSentenceDone(voiceSession, sentence);
             }
         }
 
         private void Report(string message)
         {
             Debug.LogWarning($"[Voice] TTS: {message}");
-            Problem?.Invoke(message);
+            ReportProblem(message);
         }
 
         /// <summary>Implements the Java interface TextToSpeech.OnInitListener.</summary>
@@ -130,6 +172,29 @@ namespace SolarSystemAR.Voice
             public void onInit(int status)
             {
                 MainThreadQueue.Post(() => owner.OnInit(status));
+            }
+        }
+
+        /// <summary>
+        /// Implements the Java interface TextToSpeech.OnUtteranceCompletedListener.
+        /// (The newer UtteranceProgressListener is an abstract class, which Unity's AndroidJavaProxy
+        /// can't implement without a Java file; this older interface works on all Android versions.)
+        /// </summary>
+        [Preserve]
+        private class CompletedListener : AndroidJavaProxy
+        {
+            private readonly AndroidSpeechSynthesizer owner;
+
+            public CompletedListener(AndroidSpeechSynthesizer owner)
+                : base("android.speech.tts.TextToSpeech$OnUtteranceCompletedListener")
+            {
+                this.owner = owner;
+            }
+
+            [Preserve]
+            public void onUtteranceCompleted(string utteranceId)
+            {
+                MainThreadQueue.Post(() => owner.OnUtteranceCompleted(utteranceId));
             }
         }
     }

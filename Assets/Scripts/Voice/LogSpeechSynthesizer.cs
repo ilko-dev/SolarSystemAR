@@ -1,27 +1,24 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SolarSystemAR.Voice
 {
-    /// <summary>Stand-in voice for the PC: prints what would be spoken to the Console.</summary>
-    public class LogSpeechSynthesizer : ISpeechSynthesizer
+    /// <summary>
+    /// Stand-in voice for the PC: prints what would be spoken to the Console.
+    /// Captions still advance sentence by sentence, timed as if it were spoken.
+    /// </summary>
+    public class LogSpeechSynthesizer : SentenceSpeechSynthesizer
     {
-        // Never raised: the Console voice has nothing to set up.
-        public event Action<string> Problem { add { } remove { } }
-
-        public void Speak(string text)
+        protected override bool StartVoice(IReadOnlyList<string> parts, int voiceSession)
         {
-            if (!string.IsNullOrWhiteSpace(text))
-                Debug.Log($"[Voice] Speaking: {text}");
+            Debug.Log($"[Voice] Speaking: {string.Join(" ", parts)}");
+            return false; // no real voice: advance by estimated time
         }
 
-        public void Stop()
+        protected override void StopVoice()
         {
-            Debug.Log("[Voice] Speech stopped.");
-        }
-
-        public void Dispose()
-        {
+            if (IsSpeaking)
+                Debug.Log("[Voice] Speech stopped.");
         }
     }
 }

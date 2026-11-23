@@ -8,6 +8,7 @@ namespace SolarSystemAR.Voice
     /// Glue between speech and the app:
     ///  - mic button (bottom-right) -> recognizer -> VoiceCommandParser -> AppController.Execute
     ///  - AppController.NarrationRequested / NarrationStopped -> synthesizer (reads text aloud)
+    ///  - synthesizer sentence events -> Caption (for CaptionView) and the guide's talking animation
     /// Created automatically by VoiceBootstrap; no scene setup needed.
     /// </summary>
     public class VoiceController : MonoBehaviour
@@ -19,6 +20,12 @@ namespace SolarSystemAR.Voice
 
         private ISpeechRecognizer recognizer;
         private ISpeechSynthesizer synthesizer;
+
+        /// <summary>The sentence being said right now, or null when the guide is silent.</summary>
+        public string Caption { get; private set; }
+
+        /// <summary>Raised when Caption changes (null = hide the caption).</summary>
+        public event System.Action<string> CaptionChanged;
 
         private string status = "Натисніть «Говорити» і скажіть команду";
         private string typedText = string.Empty;
@@ -40,6 +47,8 @@ namespace SolarSystemAR.Voice
             recognizer.Recognized += OnRecognized;
             recognizer.Failed += OnRecognitionFailed;
             synthesizer.Problem += OnSynthesizerProblem;
+            synthesizer.SentenceStarted += OnSentenceStarted;
+            synthesizer.Finished += OnSpeechFinished;
 
             if (appController != null)
             {
@@ -53,6 +62,8 @@ namespace SolarSystemAR.Voice
             recognizer.Recognized -= OnRecognized;
             recognizer.Failed -= OnRecognitionFailed;
             synthesizer.Problem -= OnSynthesizerProblem;
+            synthesizer.SentenceStarted -= OnSentenceStarted;
+            synthesizer.Finished -= OnSpeechFinished;
 
             if (appController != null)
             {
@@ -62,6 +73,7 @@ namespace SolarSystemAR.Voice
 
             recognizer.Cancel();
             synthesizer.Stop();
+            SetCaption(null);
         }
 
         private void OnDestroy()
@@ -74,6 +86,7 @@ namespace SolarSystemAR.Voice
         {
             // Deliver Android callbacks on Unity's main thread.
             MainThreadQueue.Drain();
+            synthesizer.Tick(Time.unscaledDeltaTime);
         }
 
         // Real microphone and voice on the phone; typing + Console in the Editor / on PC.
@@ -205,6 +218,27 @@ namespace SolarSystemAR.Voice
         private void OnNarrationStopped()
         {
             synthesizer.Stop();
+        }
+
+        private void OnSentenceStarted(string sentence)
+        {
+            guideController?.SetTalking(true);
+            SetCaption(sentence);
+        }
+
+        private void OnSpeechFinished()
+        {
+            guideController?.SetTalking(false);
+            SetCaption(null);
+        }
+
+        private void SetCaption(string text)
+        {
+            if (Caption == text)
+                return;
+
+            Caption = text;
+            CaptionChanged?.Invoke(text);
         }
 
         // ---------- on-screen UI (bottom-right corner) ----------
