@@ -113,6 +113,8 @@ namespace SolarSystemAR.Core
 
             if (isMoving)
                 TurnTowards(transform.position - previousPosition);
+            else if (Camera.main != null)
+                TurnTowards(Camera.main.transform.position - transform.position); // look at the viewer
 
             UpdateFloating(isMoving);
 
