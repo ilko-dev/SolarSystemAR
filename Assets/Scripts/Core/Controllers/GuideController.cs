@@ -32,6 +32,12 @@ namespace SolarSystemAR.Core
         [Tooltip("Seconds to fade the floating in after arriving (and out when taking off).")]
         [SerializeField] private float floatFade = 0.5f;
 
+        [Header("Turning")]
+        [Tooltip("How quickly he turns. Higher = snappier.")]
+        [SerializeField] private float turnSharpness = 6f;
+        [Tooltip("Extra turn (degrees) if the model faces the wrong way, e.g. 180 or 90.")]
+        [SerializeField] private float facingOffset = 0f;
+
         private Transform targetPlanet;
         private Vector3 homePosition;
 
@@ -93,6 +99,7 @@ namespace SolarSystemAR.Core
 
             // Take last frame's float offset off, so moving and arriving use the real position.
             transform.position -= floatOffset;
+            Vector3 previousPosition = transform.position;
 
             transform.position = Vector3.MoveTowards(
                 transform.position,
@@ -103,6 +110,9 @@ namespace SolarSystemAR.Core
             bool isMoving =
                 Vector3.Distance(transform.position, destination)
                 > arrivalDistance;
+
+            if (isMoving)
+                TurnTowards(transform.position - previousPosition);
 
             UpdateFloating(isMoving);
 
@@ -124,6 +134,23 @@ namespace SolarSystemAR.Core
                     ? GuideState.Pointing
                     : GuideState.Idle);
             }
+        }
+
+        // Smoothly turns him left/right (around the solar system's up axis) to face a direction.
+        // He never tips up or down, so the Blender animations still look upright.
+        private void TurnTowards(Vector3 direction)
+        {
+            Vector3 up = transform.parent.up;
+            Vector3 flat = Vector3.ProjectOnPlane(direction, up);
+            if (flat.sqrMagnitude < 1e-8f)
+                return;
+
+            Quaternion target = Quaternion.LookRotation(flat, up) * Quaternion.Euler(0f, facingOffset, 0f);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                target,
+                1f - Mathf.Exp(-turnSharpness * Time.deltaTime)
+            );
         }
 
         // Gentle up-and-down bob while he hangs next to a planet (or at home).
