@@ -11,6 +11,7 @@ namespace SolarSystemAR.Voice
     ///  - synthesizer sentence events -> Caption (for CaptionView) and the guide's talking animation
     /// Created automatically by VoiceBootstrap; no scene setup needed.
     /// </summary>
+    [RequireComponent(typeof(CaptionView))] // subtitles for what the guide says
     public class VoiceController : MonoBehaviour
     {
         private const string NotUnderstoodSpeech = "Не зрозумів. Повторіть, будь ласка.";
