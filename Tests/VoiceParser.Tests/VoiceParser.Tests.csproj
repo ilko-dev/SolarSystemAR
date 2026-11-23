@@ -17,6 +17,7 @@
     <Compile Include="../../Assets/Scripts/Core/Models/AppCommand.cs" Link="Linked/AppCommand.cs" />
     <Compile Include="../../Assets/Scripts/Core/Models/PlanetId.cs" Link="Linked/PlanetId.cs" />
     <Compile Include="../../Assets/Scripts/Core/Models/PlanetIntro.cs" Link="Linked/PlanetIntro.cs" />
+    <Compile Include="../../Assets/Scripts/Voice/SpeechSentences.cs" Link="Linked/SpeechSentences.cs" />
     <Compile Include="../../Assets/Scripts/Voice/VoiceCommandParser.cs" Link="Linked/VoiceCommandParser.cs" />
     <Compile Include="../../Assets/Scripts/Voice/VoiceKeywords.cs" Link="Linked/VoiceKeywords.cs" />
     <Compile Include="../../Assets/Scripts/Voice/VoiceParseContext.cs" Link="Linked/VoiceParseContext.cs" />

@@ -32,6 +32,10 @@ namespace SolarSystemAR.Core
         private float talkingUntil;
         private bool isListening;
 
+        // Set once the voice system reports real speech; then the talking timer is not used.
+        private bool speechDriven;
+        private bool isTalking;
+
         private void Awake()
         {
             homePosition = transform.localPosition;
@@ -95,7 +99,7 @@ namespace SolarSystemAR.Core
             {
                 SetState(GuideState.Listening);
             }
-            else if (Time.time < talkingUntil)
+            else if (speechDriven ? isTalking : Time.time < talkingUntil)
             {
                 SetState(GuideState.Talking);
             }
@@ -136,7 +140,7 @@ namespace SolarSystemAR.Core
         {
             isListening = false;
 
-            // Temporary duration until audio integration
+            // Guessed duration, used only when no voice system reports real speech (SetTalking).
             talkingUntil = Time.time +
                 Mathf.Clamp(
                     (text?.Length ?? 0) * 0.05f,
@@ -160,6 +164,16 @@ namespace SolarSystemAR.Core
         public void StopListening()
         {
             isListening = false;
+        }
+
+        /// <summary>Called by the voice system when the voice starts and stops speaking.</summary>
+        public void SetTalking(bool talking)
+        {
+            speechDriven = true;
+            isTalking = talking;
+
+            if (talking)
+                isListening = false;
         }
 
         private void SetState(GuideState state)

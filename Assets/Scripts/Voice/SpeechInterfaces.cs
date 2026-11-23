@@ -25,15 +25,28 @@ namespace SolarSystemAR.Voice
 
     /// <summary>
     /// Text-to-speech. Implementations: LogSpeechSynthesizer (PC/Editor, writes to the Console)
-    /// and AndroidSpeechSynthesizer (the phone's built-in TTS voice).
+    /// and AndroidSpeechSynthesizer (the phone's built-in TTS voice). Both speak sentence by sentence.
+    /// All events are raised on Unity's main thread.
     /// </summary>
     public interface ISpeechSynthesizer : IDisposable
     {
         /// <summary>Setup problem worth showing to the user (e.g. no Ukrainian voice installed).</summary>
         event Action<string> Problem;
 
+        /// <summary>The voice started saying this sentence (used for captions).</summary>
+        event Action<string> SentenceStarted;
+
+        /// <summary>The voice has nothing more to say: it finished or was stopped.</summary>
+        event Action Finished;
+
+        bool IsSpeaking { get; }
+
+        /// <summary>Replaces whatever is being said.</summary>
         void Speak(string text);
 
         void Stop();
+
+        /// <summary>Call every frame (keeps timing going when there is no real voice).</summary>
+        void Tick(float deltaTime);
     }
 }
