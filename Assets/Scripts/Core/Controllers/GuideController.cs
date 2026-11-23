@@ -35,8 +35,9 @@ namespace SolarSystemAR.Core
         [Header("Turning")]
         [Tooltip("How quickly he turns. Higher = snappier.")]
         [SerializeField] private float turnSharpness = 6f;
-        [Tooltip("Extra turn (degrees) if the model faces the wrong way, e.g. 180 or 90.")]
-        [SerializeField] private float facingOffset = 0f;
+        [Tooltip("Extra turn (degrees) so the model's face points forward. 180 because the astronaut model " +
+                 "inside this object is turned around (its face looks along -Z).")]
+        [SerializeField] private float facingOffset = 180f;
 
         private Transform targetPlanet;
         private Vector3 homePosition;
