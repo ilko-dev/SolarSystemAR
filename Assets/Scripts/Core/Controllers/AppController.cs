@@ -23,6 +23,10 @@ namespace SolarSystemAR.Core
         public event Action<AppState> StateChanged;
         public event Action<PlanetId> PlanetSelected;
 
+        // Separate retained presentation state; never forwards arbitrary narration.
+        public PlanetInfoContent CurrentPlanetInfo { get; private set; }
+        public event Action<PlanetInfoContent> PlanetInfoChanged;
+
         // Temporary integration points for Artem's audio system
         public event Action<string> NarrationRequested;
         public event Action NarrationStopped;
@@ -159,6 +163,8 @@ namespace SolarSystemAR.Core
             state.SelectedPlanet = id;
             state.Mode = mode;
 
+            PublishPlanetInfo(id, PlanetInfoSection.Introduction);
+
             PlanetSelected?.Invoke(id);
             NotifyStateChanged();
 
@@ -179,6 +185,9 @@ namespace SolarSystemAR.Core
             state.SelectedPlanet = null;
             state.Mode = AppMode.Overview;
             state.TourIndex = 0;
+
+            CurrentPlanetInfo = null;
+            PlanetInfoChanged?.Invoke(null);
 
             NarrationStopped?.Invoke();
             NotifyStateChanged();
@@ -226,6 +235,11 @@ namespace SolarSystemAR.Core
 
         private void SpeakPlanetInfo(PlanetId? planet, bool history)
         {
+            PlanetId? infoPlanet = planet ?? state.SelectedPlanet;
+            if (infoPlanet.HasValue)
+                PublishPlanetInfo(infoPlanet.Value, history
+                    ? PlanetInfoSection.History : PlanetInfoSection.Fact);
+
             PlanetData data = ResolvePlanetData(planet);
 
             if (data == null)
@@ -309,6 +323,12 @@ namespace SolarSystemAR.Core
 
             Debug.Log($"Narration: {lastNarrationText}");
             NarrationRequested?.Invoke(lastNarrationText);
+        }
+
+        private void PublishPlanetInfo(PlanetId id, PlanetInfoSection section)
+        {
+            CurrentPlanetInfo = PlanetInfoContent.Create(id, GetPlanetData(id), section);
+            PlanetInfoChanged?.Invoke(CurrentPlanetInfo);
         }
 
         public void SetTrackingAvailable(bool available)

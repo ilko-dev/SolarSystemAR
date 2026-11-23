@@ -11,6 +11,7 @@ namespace SolarSystemAR.Core
     {
         public PlanetId id;
         public string displayName;
+        public Sprite image;
         public string planetType;
 
         public float diameterKm;

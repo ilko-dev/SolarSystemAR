@@ -6,6 +6,7 @@ namespace SolarSystemAR.Core
     public enum GuideState
     {
         Idle,
+        Flying,
         Listening,
         Talking,
         Pointing
@@ -13,22 +14,30 @@ namespace SolarSystemAR.Core
 
     public class GuideController : MonoBehaviour
     {
+        [Header("References")]
         [SerializeField] private AppController appController;
         [SerializeField] private SolarSystemController solarSystem;
-        [SerializeField] private Renderer guideRenderer;
+        [SerializeField] private Animator animator;
 
+        [Header("Movement")]
         [SerializeField] private float moveSpeed = 0.3f;
+        [SerializeField] private float arrivalDistance = 0.005f;
         [SerializeField] private Vector3 planetOffset =
             new Vector3(0.7f, 0f, 0.7f);
 
         private Transform targetPlanet;
         private Vector3 homePosition;
-        private GuideState currentState;
+
+        private GuideState? currentState;
         private float talkingUntil;
+        private bool isListening;
 
         private void Awake()
         {
             homePosition = transform.localPosition;
+
+            if (animator == null)
+                animator = GetComponentInChildren<Animator>();
         }
 
         private void OnEnable()
@@ -74,9 +83,24 @@ namespace SolarSystemAR.Core
                 moveSpeed * Time.deltaTime
             );
 
-            if (talkingUntil > 0f && Time.time >= talkingUntil)
+            bool isMoving =
+                Vector3.Distance(transform.position, destination)
+                > arrivalDistance;
+
+            if (isMoving)
             {
-                talkingUntil = 0f;
+                SetState(GuideState.Flying);
+            }
+            else if (isListening)
+            {
+                SetState(GuideState.Listening);
+            }
+            else if (Time.time < talkingUntil)
+            {
+                SetState(GuideState.Talking);
+            }
+            else
+            {
                 SetState(targetPlanet != null
                     ? GuideState.Pointing
                     : GuideState.Idle);
@@ -85,14 +109,17 @@ namespace SolarSystemAR.Core
 
         private void OnPlanetSelected(PlanetId id)
         {
+            if (solarSystem == null)
+                return;
+
             PlanetOrbit planet = solarSystem.GetPlanet(id);
 
             if (planet == null)
                 return;
 
             targetPlanet = planet.transform;
+            isListening = false;
             talkingUntil = 0f;
-            SetState(GuideState.Pointing);
         }
 
         private void OnStateChanged(AppState state)
@@ -101,58 +128,65 @@ namespace SolarSystemAR.Core
                 return;
 
             targetPlanet = null;
+            isListening = false;
             talkingUntil = 0f;
-            SetState(GuideState.Idle);
         }
 
         private void OnNarrationRequested(string text)
         {
-            SetState(GuideState.Talking);
+            isListening = false;
 
-            // Temporary duration until real audio is connected
+            // Temporary duration until audio integration
             talkingUntil = Time.time +
-                Mathf.Clamp(text.Length * 0.05f, 2f, 8f);
+                Mathf.Clamp(
+                    (text?.Length ?? 0) * 0.05f,
+                    2f,
+                    8f
+                );
         }
 
         private void OnNarrationStopped()
         {
             talkingUntil = 0f;
-            SetState(targetPlanet != null
-                ? GuideState.Pointing
-                : GuideState.Idle);
+            isListening = false;
         }
 
         public void SetListening()
         {
+            isListening = true;
             talkingUntil = 0f;
-            SetState(GuideState.Listening);
         }
 
-        // Called by the voice system when listening ends (back to pointing/idle).
         public void StopListening()
         {
-            if (currentState != GuideState.Listening)
-                return;
-
-            SetState(targetPlanet != null
-                ? GuideState.Pointing
-                : GuideState.Idle);
+            isListening = false;
         }
 
         private void SetState(GuideState state)
         {
-            currentState = state;
-
-            if (guideRenderer == null)
+            if (currentState == state)
                 return;
 
-            guideRenderer.material.color = state switch
+            currentState = state;
+
+            if (animator == null)
+                return;
+
+            string animationName = state switch
             {
-                GuideState.Listening => Color.cyan,
-                GuideState.Talking => Color.green,
-                GuideState.Pointing => Color.yellow,
-                _ => Color.white
+                GuideState.Flying => "Model|Fly",
+                GuideState.Listening => "Model|Thinking",
+                GuideState.Talking => "Model|Talking",
+                GuideState.Pointing => "Model|Pointing",
+                _ => "Model|Idle_Breathing"
             };
+
+            animator.CrossFadeInFixedTime(
+                $"Base Layer.{animationName}",
+                0.15f
+            );
+
+            Debug.Log($"Guide state: {state}");
         }
     }
 }
