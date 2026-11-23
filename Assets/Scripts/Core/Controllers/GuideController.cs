@@ -37,7 +37,7 @@ namespace SolarSystemAR.Core
         [SerializeField] private float turnSharpness = 6f;
         [Tooltip("Extra turn (degrees) so the model's face points forward. 180 because the astronaut model " +
                  "inside this object is turned around (its face looks along -Z).")]
-        [SerializeField] private float facingOffset = 180f;
+        [SerializeField] private float modelFacingOffset = 180f;
 
         private Transform targetPlanet;
         private Vector3 homePosition;
@@ -148,7 +148,7 @@ namespace SolarSystemAR.Core
             if (flat.sqrMagnitude < 1e-8f)
                 return;
 
-            Quaternion target = Quaternion.LookRotation(flat, up) * Quaternion.Euler(0f, facingOffset, 0f);
+            Quaternion target = Quaternion.LookRotation(flat, up) * Quaternion.Euler(0f, modelFacingOffset, 0f);
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
                 target,
