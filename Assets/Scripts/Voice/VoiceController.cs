@@ -242,7 +242,7 @@ namespace SolarSystemAR.Voice
             CaptionChanged?.Invoke(text);
         }
 
-        // ---------- on-screen UI (bottom-right corner) ----------
+        // ---------- on-screen UI (bottom row: status text, then the mic button in the corner) ----------
 
         private void OnGUI()
         {
@@ -254,8 +254,6 @@ namespace SolarSystemAR.Voice
 
             float width = Screen.width / scale;
             float height = Screen.height / scale;
-            float areaWidth = Mathf.Min(410f, width - 20f);
-            float left = width - areaWidth - 10f;
 
             var labelStyle = new GUIStyle(GUI.skin.box)
             {
@@ -265,10 +263,12 @@ namespace SolarSystemAR.Voice
             };
             var buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 20, fontStyle = FontStyle.Bold };
 
-            GUI.Label(new Rect(left, height - 210, areaWidth, 50), status, labelStyle);
+            // Status ("Ви сказали: ...") sits left of the mic button, in the same row.
+            // Captions (CaptionView) go full width just above this row.
+            GUI.Label(new Rect(10, height - 95, width - 190, 85), status, labelStyle);
 
             if (recognizer is TypedTextRecognizer typed && typed.IsListening)
-                DrawTypingBox(typed, left, height - 150, areaWidth);
+                DrawTypingBox(typed, 10, height - 150, width - 20);
 
             string micLabel = recognizer.IsListening ? "Стоп" : "Говорити";
             if (GUI.Button(new Rect(width - 170, height - 95, 160, 85), micLabel, buttonStyle))
