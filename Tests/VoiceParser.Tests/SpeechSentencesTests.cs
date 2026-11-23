@@ -47,8 +47,8 @@ namespace VoiceParser.Tests
             Assert.True(pieces.Count >= 2);
             Assert.All(pieces, p => Assert.InRange(p.Length, SpeechSentences.MaxLength / 3, SpeechSentences.MaxLength));
             Assert.Equal(text, string.Join(" ", pieces));
-            Assert.True(pieces.Take(pieces.Count - 1).All(p => p.EndsWith(",") || p.EndsWith("планету")),
-                string.Join(" | ", pieces));
+            Assert.EndsWith(",", pieces[0]);          // cut after a comma, not mid-phrase
+            Assert.StartsWith("—", pieces[2]);        // and before a dash
         }
 
         [Fact]
