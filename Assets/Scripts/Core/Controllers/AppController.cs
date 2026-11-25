@@ -48,6 +48,8 @@ namespace SolarSystemAR.Core
             if (command == null)
                 return;
 
+            FocusNamedPlanet(command);
+
             switch (command.Type)
             {
                 case CommandType.SelectPlanet:
@@ -147,6 +149,24 @@ namespace SolarSystemAR.Core
                     Debug.LogWarning($"Unknown command type: {command.Type}");
                     break;
             }
+        }
+
+        // "Розкажи факт про Юпітер" while at Mercury: quietly select Jupiter first,
+        // so the astronaut flies there and the info panel matches what is being said.
+        private void FocusNamedPlanet(AppCommand command)
+        {
+            bool talksAboutPlanet =
+                command.Type == CommandType.ShowFact ||
+                command.Type == CommandType.ShowHistory ||
+                command.Type == CommandType.AskQuestion ||
+                command.Type == CommandType.ListQuestions;
+
+            if (!talksAboutPlanet || !command.Planet.HasValue ||
+                state.SelectedPlanet == command.Planet)
+                return;
+
+            tourController?.StopTour();
+            SelectPlanet(command.Planet.Value);
         }
 
         private void SelectPlanet(
