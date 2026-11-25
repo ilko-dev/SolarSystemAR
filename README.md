@@ -37,6 +37,7 @@ Go to **Settings → Text-to-speech**, choose **Google**, and download **Ukraini
 
 ## For developers
 
+- The **Show Test UI** button appears only in the Unity Editor and in builds with **Development Build** ticked (File → Build Profiles). Untick it for a release build and the test UI is hidden.
 - Voice phrases are in `Assets/Scripts/Voice/VoiceKeywords.cs`.
 - Planet and Sun texts and questions are in `Assets/Data/Planets/` (edit them in the Inspector). The Sun is `SunData`; it is id 8 (`PlanetId.Sun`), kept last because Unity saves these ids as numbers.
 - The Sun is selectable because it has a `PlanetOrbit` component (orbit speed 0, so it only spins) and is listed in **SimulationRoot → Solar System Controller → Planets**. Its data is in **AppManager → App Controller → Planet Catalog**.
