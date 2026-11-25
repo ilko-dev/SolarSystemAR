@@ -1,4 +1,5 @@
 
+using System;
 using UnityEngine;
 
 namespace SolarSystemAR.Core
@@ -22,8 +23,18 @@ namespace SolarSystemAR.Core
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 0.3f;
         [SerializeField] private float arrivalDistance = 0.005f;
+        [Tooltip("Which side of a planet he hovers on. Only the direction is used; the distance comes from " +
+                 "the planet's size plus Side Gap.")]
         [SerializeField] private Vector3 planetOffset =
             new Vector3(0.7f, 0f, 0.7f);
+        [Tooltip("Space between the planet's surface and the astronaut when he hovers beside it.")]
+        [SerializeField] private float sideGap = 0.35f;
+
+        [Header("Standing on top")]
+        [Tooltip("He stands on top of these instead of beside them, so he never ends up inside the Sun.")]
+        [SerializeField] private PlanetId[] standOnTopOf = { PlanetId.Sun, PlanetId.Mercury, PlanetId.Venus };
+        [Tooltip("Space between the top of the planet and his feet.")]
+        [SerializeField] private float topGap = 0.05f;
 
         [Header("Floating (when still)")]
         [Tooltip("How far up and down he floats, in the same units as Planet Offset.")]
@@ -40,6 +51,10 @@ namespace SolarSystemAR.Core
         [SerializeField] private float modelFacingOffset = 180f;
 
         private Transform targetPlanet;
+        private bool targetOnTop;
+        private float targetRadius;     // planet size, in the solar system's own units
+        private float targetHeight;     // planet half-height (top surface above centre)
+        private float feetBelowPivot;   // how far his feet are below his own position
         private Vector3 homePosition;
 
         private float floatWeight;      // 0 = no floating (flying), 1 = full floating (still)
@@ -85,6 +100,7 @@ namespace SolarSystemAR.Core
 
         private void Start()
         {
+            feetBelowPivot = MeasureFeet();
             SetState(GuideState.Idle);
         }
 
@@ -94,8 +110,7 @@ namespace SolarSystemAR.Core
                 return;
 
             Vector3 destination = targetPlanet != null
-                ? targetPlanet.position +
-                  transform.parent.TransformVector(planetOffset)
+                ? targetPlanet.position + transform.parent.TransformVector(SpotNextToPlanet())
                 : transform.parent.TransformPoint(homePosition);
 
             // Take last frame's float offset off, so moving and arriving use the real position.
@@ -171,6 +186,69 @@ namespace SolarSystemAR.Core
             transform.position += floatOffset;
         }
 
+        // Where to hover, relative to the planet's centre, in the solar system's own units.
+        private Vector3 SpotNextToPlanet()
+        {
+            if (targetOnTop)
+                return Vector3.up * (targetHeight + topGap + feetBelowPivot);
+
+            Vector3 side = new Vector3(planetOffset.x, 0f, planetOffset.z);
+            if (side.sqrMagnitude < 1e-6f)
+                side = Vector3.right;
+
+            return side.normalized * (targetRadius + sideGap) + Vector3.up * planetOffset.y;
+        }
+
+        // Measures a planet from its meshes (glow and particles are ignored).
+        // Results are in the solar system's own units, the same units as Planet Offset.
+        private void MeasurePlanet(Transform planet)
+        {
+            Bounds? bounds = MeshBounds(planet);
+            float toLocal = 1f / Mathf.Max(transform.parent.lossyScale.y, 1e-6f);
+
+            targetRadius = bounds.HasValue
+                ? Mathf.Max(bounds.Value.extents.x, bounds.Value.extents.z) * toLocal : 0.5f;
+            targetHeight = bounds.HasValue
+                ? (bounds.Value.max.y - planet.position.y) * toLocal : 0.5f;
+        }
+
+        // How far below his position his feet are, so "on top" means standing, not sunk in.
+        private float MeasureFeet()
+        {
+            if (transform.parent == null)
+                return 0f;
+
+            Bounds? bounds = MeshBounds(transform);
+            if (!bounds.HasValue)
+                return 0f;
+
+            float toLocal = 1f / Mathf.Max(transform.parent.lossyScale.y, 1e-6f);
+            return Mathf.Max(0f, (transform.position.y - bounds.Value.min.y) * toLocal);
+        }
+
+        private static Bounds? MeshBounds(Transform root)
+        {
+            Bounds? total = null;
+            foreach (Renderer r in root.GetComponentsInChildren<Renderer>())
+            {
+                if (!(r is MeshRenderer) && !(r is SkinnedMeshRenderer))
+                    continue;
+
+                if (total.HasValue)
+                {
+                    Bounds b = total.Value;
+                    b.Encapsulate(r.bounds);
+                    total = b;
+                }
+                else
+                {
+                    total = r.bounds;
+                }
+            }
+
+            return total;
+        }
+
         private void OnPlanetSelected(PlanetId id)
         {
             if (solarSystem == null)
@@ -182,6 +260,8 @@ namespace SolarSystemAR.Core
                 return;
 
             targetPlanet = planet.transform;
+            targetOnTop = standOnTopOf != null && Array.IndexOf(standOnTopOf, id) >= 0;
+            MeasurePlanet(targetPlanet);
             isListening = false;
             talkingUntil = 0f;
         }
