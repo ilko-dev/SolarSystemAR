@@ -38,6 +38,9 @@ namespace VoiceParser.Tests
         [InlineData("покажи Землю", PlanetId.Earth)]
         [InlineData("що на Землі", PlanetId.Earth)]
         [InlineData("Меркурій", PlanetId.Mercury)]
+        [InlineData("покажи Сонце", PlanetId.Sun)]
+        [InlineData("Сонце", PlanetId.Sun)]
+        [InlineData("до Сонця", PlanetId.Sun)]
         [InlineData("покажи Уран", PlanetId.Uranus)]
         [InlineData("перейди до Урана", PlanetId.Uranus)]
         [InlineData("Сатурн", PlanetId.Saturn)]
@@ -206,6 +209,20 @@ namespace VoiceParser.Tests
         public void PlanetIndependentCommands_HaveNoPlanet()
         {
             AssertCommand(Parse("наступна планета після Марса"), CommandType.NextPlanet);
+        }
+
+        [Fact]
+        public void SolarSystem_IsOverview_NotTheSun()
+        {
+            AssertCommand(Parse("покажи всю сонячну систему"), CommandType.ShowOverview);
+        }
+
+        [Theory]
+        [InlineData("покажи Марс біля Сонця", PlanetId.Mars)]
+        [InlineData("покажи Сонце і Юпітер", PlanetId.Jupiter)]
+        public void RealPlanet_WinsOverTheSun(string text, PlanetId expected)
+        {
+            AssertCommand(Parse(text), CommandType.SelectPlanet, expected);
         }
     }
 }

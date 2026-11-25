@@ -297,7 +297,7 @@ namespace SolarSystemAR.Core
         }
 
         private const string HelpText =
-            "Я вмію показувати планети: скажіть, наприклад, «покажи Юпітер». " +
+            "Я вмію показувати планети і Сонце: скажіть, наприклад, «покажи Юпітер». " +
             "Можу розповісти цікавий факт або історію відкриття, відповісти на запитання про планету — " +
             "скажіть «які питання», щоб дізнатися, що можна запитати. " +
             "Скажіть «почни екскурсію» для подорожі планетами, «далі» або «назад» — щоб перемикати їх, " +
@@ -312,7 +312,8 @@ namespace SolarSystemAR.Core
                 return;
 
             Speak(PlanetIntro.Build(data.displayName, data.planetType, data.diameterKm,
-                data.distanceFromSunMillionKm, data.dayDuration, data.yearDuration, data.moonCount));
+                data.distanceFromSunMillionKm, data.dayDuration, data.yearDuration, data.moonCount,
+                isStar: id == PlanetId.Sun));
         }
 
         private void ListQuestions(PlanetId? planet)
