@@ -82,20 +82,25 @@ namespace SolarSystemAR.Voice
 
         private static PlanetId? FindPlanet(string[] words)
         {
-            // The first planet mentioned wins.
+            // The first planet mentioned wins. The Sun counts only when no planet is named,
+            // so "як далеко Марс від Сонця" is about Mars.
+            bool sunNamed = false;
             for (int i = 0; i < words.Length; i++)
             {
                 foreach (var entry in VoiceKeywords.PlanetStems)
                 {
                     foreach (string stem in entry.Value)
                     {
-                        if (WordMatches(words[i], stem))
+                        if (!WordMatches(words[i], stem))
+                            continue;
+                        if (entry.Key != PlanetId.Sun)
                             return entry.Key;
+                        sunNamed = true;
                     }
                 }
             }
 
-            return null;
+            return sunNamed ? PlanetId.Sun : (PlanetId?)null;
         }
 
         private static bool IsPlanetWord(string word)

@@ -46,6 +46,19 @@ namespace VoiceParser.Tests
         }
 
         [Fact]
+        public void Intro_Sun_TalksAboutPlanetsNotMoons()
+        {
+            string text = PlanetIntro.Build("Сонце", "Зоря, жовтий карлик", 1392700, 0f,
+                "приблизно за 25 земних діб", "", 0, isStar: true);
+
+            Assert.StartsWith("Сонце — зоря, жовтий карлик. Діаметр — 1392700 кілометрів.", text);
+            Assert.Contains("Навколо своєї осі обертається приблизно за 25 земних діб.", text);
+            Assert.Contains("Навколо нього обертаються вісім планет.", text);
+            Assert.DoesNotContain("Супутник", text);
+            Assert.DoesNotContain("Відстань від Сонця", text);
+        }
+
+        [Fact]
         public void Intro_Mars()
         {
             string text = PlanetIntro.Build("Марс", "Планета земної групи", 6779, 227.9f,

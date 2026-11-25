@@ -13,6 +13,13 @@ namespace SolarSystemAR.UI
         private bool isExpanded = true;
         private Vector2 scrollPosition;
 
+        private void Awake()
+        {
+            // Test UI only in the Editor and in builds with "Development Build" ticked.
+            if (!Debug.isDebugBuild)
+                enabled = false;
+        }
+
         private void OnGUI()
         {
             if (appController == null)

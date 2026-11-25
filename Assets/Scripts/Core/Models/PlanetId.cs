@@ -9,6 +9,9 @@ namespace SolarSystemAR.Core
         Jupiter,
         Saturn,
         Uranus,
-        Neptune
+        Neptune,
+
+        // Kept last: Unity saves these as numbers (Mercury = 0 ... Neptune = 7, Sun = 8).
+        Sun
     }
 }

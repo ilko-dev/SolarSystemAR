@@ -25,6 +25,8 @@ namespace SolarSystemAR.Voice
             { PlanetId.Saturn,  new[] { "сатурн*" } },
             { PlanetId.Uranus,  new[] { "уран", "урана", "урану", "ураном", "урані" } },
             { PlanetId.Neptune, new[] { "нептун*" } },
+            // Exact forms, so "сонячна система" (solar system) does not count as the Sun.
+            { PlanetId.Sun,     new[] { "сонце", "сонця", "сонцю", "сонцем", "сонці", "сонечк*" } },
         };
 
         // Checked first: they must always work, even mid-sentence.

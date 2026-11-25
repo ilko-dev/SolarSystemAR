@@ -300,6 +300,11 @@ MonoBehaviour:
   moveSpeed: 0.3
   arrivalDistance: 0.005
   planetOffset: {x: 0.7, y: 0, z: 0.7}
+  floatHeight: 0.04
+  floatPeriod: 3
+  floatFade: 0.5
+  turnSharpness: 6
+  modelFacingOffset: 180
 --- !u!1 &158742502
 GameObject:
   m_ObjectHideFlags: 0
@@ -759,6 +764,7 @@ GameObject:
   - component: {fileID: 776271793}
   - component: {fileID: 776271792}
   - component: {fileID: 776271791}
+  - component: {fileID: 776271794}
   m_Layer: 0
   m_Name: Sun
   m_TagString: Untagged
@@ -860,6 +866,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 776271789}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &776271794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 776271789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 148dcce3dd982f94caeffd6619b03fcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SolarSystemAR.Core.PlanetOrbit
+  planetId: 8
+  orbitSpeed: 0
+  rotationSpeed: 5
+  sun: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -3208,6 +3230,7 @@ MonoBehaviour:
   - {fileID: 8769961}
   - {fileID: 1155478243}
   - {fileID: 757968242}
+  - {fileID: 776271794}
 --- !u!114 &2066705299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3340,6 +3363,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 741901011f414a17abf9c6d2f5bf35bf, type: 2}
   - {fileID: 11400000, guid: acf6333c634e449f8cac21c57504689b, type: 2}
   - {fileID: 11400000, guid: e37531c1272542a1ba6c939ba79cf7ae, type: 2}
+  - {fileID: 11400000, guid: 4e0d0ba4a4ee4e5eb638a7011d481ea1, type: 2}
 --- !u!4 &2123552111
 Transform:
   m_ObjectHideFlags: 0

@@ -11,7 +11,7 @@ namespace SolarSystemAR.Core
     public static class PlanetIntro
     {
         public static string Build(string name, string type, float diameterKm, float distanceMillionKm,
-            string day, string year, int moons)
+            string day, string year, int moons, bool isStar = false)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return string.Empty;
@@ -31,12 +31,22 @@ namespace SolarSystemAR.Core
             if (distanceMillionKm > 0f)
                 text.Append($" Відстань від Сонця — {Millions(distanceMillionKm)} кілометрів.");
 
-            if (!string.IsNullOrWhiteSpace(day) && !string.IsNullOrWhiteSpace(year))
-                text.Append($" Доба триває {day.Trim()}, рік — {year.Trim()}.");
+            if (isStar)
+            {
+                // The Sun has no year or moons; planets go around it instead.
+                if (!string.IsNullOrWhiteSpace(day))
+                    text.Append($" Навколо своєї осі обертається {day.Trim()}.");
+                text.Append(" Навколо нього обертаються вісім планет.");
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(day) && !string.IsNullOrWhiteSpace(year))
+                    text.Append($" Доба триває {day.Trim()}, рік — {year.Trim()}.");
 
-            text.Append(moons > 0
-                ? $" Має {moons} {Plural(moons, "супутник", "супутники", "супутників")}."
-                : " Супутників немає.");
+                text.Append(moons > 0
+                    ? $" Має {moons} {Plural(moons, "супутник", "супутники", "супутників")}."
+                    : " Супутників немає.");
+            }
 
             text.Append(" Скажіть «які питання», щоб дізнатися, що можна запитати.");
             return text.ToString();

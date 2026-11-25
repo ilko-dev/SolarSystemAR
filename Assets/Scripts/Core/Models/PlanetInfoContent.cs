@@ -25,7 +25,8 @@ namespace SolarSystemAR.Core
             {
                 Planet = id, Name = name, Image = data != null ? data.image : null,
                 Heading = section == PlanetInfoSection.Fact ? "ЦІКАВИЙ ФАКТ"
-                    : section == PlanetInfoSection.History ? "ІСТОРІЯ ДОСЛІДЖЕННЯ" : "ПРО ПЛАНЕТУ",
+                    : section == PlanetInfoSection.History ? "ІСТОРІЯ ДОСЛІДЖЕННЯ"
+                    : id == PlanetId.Sun ? "ПРО ЗОРЮ" : "ПРО ПЛАНЕТУ",
                 Text = string.IsNullOrWhiteSpace(text) ? "Ця інформація ще не підготовлена." : text
             };
         }

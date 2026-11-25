@@ -15,6 +15,7 @@ namespace SolarSystemAR.Core
                 case PlanetId.Saturn: return "Сатурн";
                 case PlanetId.Uranus: return "Уран";
                 case PlanetId.Neptune: return "Нептун";
+                case PlanetId.Sun: return "Сонце";
                 default: return id.ToString();
             }
         }

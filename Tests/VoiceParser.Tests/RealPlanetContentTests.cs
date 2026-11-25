@@ -55,10 +55,10 @@ namespace VoiceParser.Tests
         }
 
         [Fact]
-        public void AllEightPlanetsHaveQuestions()
+        public void AllEightPlanetsAndTheSunHaveQuestions()
         {
-            Assert.Equal(8, Questions.Select(q => q.Planet).Distinct().Count());
-            Assert.Equal(24, Questions.Count);
+            Assert.Equal(9, Questions.Select(q => q.Planet).Distinct().Count());
+            Assert.Equal(28, Questions.Count);
         }
 
         [Fact]
@@ -76,6 +76,9 @@ namespace VoiceParser.Tests
 
         [Theory]
         [InlineData("чому марс червоний", null, "mars_red", PlanetId.Mars)]
+        [InlineData("яка температура сонця", PlanetId.Mars, "sun_temperature", PlanetId.Sun)]
+        [InlineData("скільки років сонцю", null, "sun_age", PlanetId.Sun)]
+        [InlineData("яка температура на меркурії", PlanetId.Sun, "mercury_temperature", PlanetId.Mercury)]
         [InlineData("скільки супутників у юпітера", PlanetId.Mars, "jupiter_moons", PlanetId.Jupiter)]
         [InlineData("скільки супутників", PlanetId.Saturn, "saturn_moons", PlanetId.Saturn)]
         [InlineData("чи можна там жити", PlanetId.Venus, "venus_life", PlanetId.Venus)]
